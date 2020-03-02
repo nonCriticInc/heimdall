@@ -31,3 +31,5 @@ func (entity *Entity) FindAll() [] Entity{
 	config.EntityCollection.Find(query).Query.All(&tempEntities)
 	return tempEntities
 }
+
+

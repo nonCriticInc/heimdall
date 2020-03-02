@@ -1,6 +1,10 @@
 package v1
 
-import "github.com/go-bongo/bongo"
+import (
+	"github.com/go-bongo/bongo"
+	"github.com/nonCriticInc/heimdall/config"
+	"gopkg.in/mgo.v2/bson"
+)
 
 type Application struct {
 	bongo.DocumentBase `bson:",inline"`
@@ -13,3 +17,30 @@ type Application struct {
 	Code               string     `bson:"code"`
 	Roles              []Role     `bson:"roles"`
 }
+
+
+func (application *Application) Save() error{
+	err := config.ApplicationCollection.Save(application)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (application *Application) FindAll() [] Application{
+	query := bson.M{}
+	tempApplications:= []Application{}
+	config.ApplicationCollection.Find(query).Query.All(&tempApplications)
+	return tempApplications
+}
+
+func (application *Application) FindById() Application{
+	query := bson.M{"$and": []bson.M{
+		{"id": application.Id},
+	},
+	}
+	tempApp:=Application{}
+	config.ApplicationCollection.Find(query).Query.One((tempApp))
+	return tempApp
+}
+
