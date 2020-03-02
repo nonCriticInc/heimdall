@@ -33,3 +33,15 @@ func (entity *Entity) FindAll() [] Entity{
 }
 
 
+func (entity *Entity) FindAllOrganizations() [] Organization{
+	query := bson.M{"$and": []bson.M{
+		{"id": entity.Id},
+	},
+	}
+	temp:=Entity{}
+	config.EntityCollection.Find(query).Query.One(&temp)
+	return temp.Organizations
+}
+
+
+

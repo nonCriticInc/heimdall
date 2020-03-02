@@ -44,3 +44,33 @@ func (application *Application) FindById() Application{
 	return tempApp
 }
 
+func (application *Application) FindResourcesById() []Resource{
+	query := bson.M{"$and": []bson.M{
+		{"id": application.Id},
+	},
+	}
+	tempApp:=Application{}
+	config.ApplicationCollection.Find(query).Query.One((tempApp))
+	return tempApp.Resources
+}
+
+func (application *Application) FindRolesById() []Role{
+	query := bson.M{"$and": []bson.M{
+		{"id": application.Id},
+	},
+	}
+	tempApp:=Application{}
+	config.ApplicationCollection.Find(query).Query.One((tempApp))
+	return tempApp.Roles
+}
+
+
+func (application *Application) FindClientsById() []Client{
+	query := bson.M{"$and": []bson.M{
+		{"id": application.Id},
+	},
+	}
+	tempApp:=Application{}
+	config.ApplicationCollection.Find(query).Query.One((tempApp))
+	return tempApp.Clients
+}
