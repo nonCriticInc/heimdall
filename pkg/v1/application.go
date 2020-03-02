@@ -1,6 +1,5 @@
 package v1
 
-
 import "github.com/go-bongo/bongo"
 
 type Application struct {
@@ -11,6 +10,6 @@ type Application struct {
 	Certs              []Cert     `bson:"certs"`
 	Clients            []Client   `bson:"clients"`
 	Resources          []Resource `bson:"resources"`
-	Code string `bson:"code"`
+	Code               string     `bson:"code"`
 	Roles              []Role     `bson:"roles"`
 }

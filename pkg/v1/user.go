@@ -1,4 +1,5 @@
 package v1
+
 import "github.com/go-bongo/bongo"
 
 type User struct {
@@ -12,10 +13,10 @@ type User struct {
 	Phone                       string `bson:"phone"`
 	IsEmailVerificationEnabled  bool   `bson:"isEmailVerificationEnabled"`
 	IsMobileVerificationEnabled bool   `bson:"isMobileVerificationEnabled"`
-	Code string `bson:"code"`
-	Entity       struct {
+	Code                        string `bson:"code"`
+	Entity                      struct {
 		Id           string `bson:"id"`
-		Organization [] struct  {
+		Organization [] struct {
 			Id          string `bson:"id"`
 			Application [] struct {
 				Id   string `bson:"id"`

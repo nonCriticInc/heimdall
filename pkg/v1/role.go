@@ -1,4 +1,5 @@
 package v1
+
 import "github.com/go-bongo/bongo"
 
 type Role struct {
@@ -7,5 +8,5 @@ type Role struct {
 	Name               string       `bson:"token"`
 	Parent             string       `bson:"parent"`
 	Permissions        []Permission `bson:"permissions"`
-	Code string `bson:"code"`
+	Code               string       `bson:"code"`
 }
