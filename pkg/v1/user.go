@@ -1,6 +1,10 @@
 package v1
 
-import "github.com/go-bongo/bongo"
+import (
+	"github.com/go-bongo/bongo"
+	"github.com/nonCriticInc/heimdall/config"
+	"gopkg.in/mgo.v2/bson"
+)
 
 type User struct {
 	bongo.DocumentBase          `bson:",inline"`
@@ -26,4 +30,22 @@ type User struct {
 			}
 		}
 	}
+}
+
+func (user *User) Save() error{
+	err := config.UserCollection.Save(user)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (user *User) FindByUsername() User{
+	query := bson.M{"$and": []bson.M{
+		{"username": user.Username},
+	},
+	}
+	temp:=User{}
+	config.UserCollection.Find(query).Query.One(&temp)
+	return temp
 }
