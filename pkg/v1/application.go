@@ -6,6 +6,17 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+type ApplicationDto struct {
+	Id                 string     `bson:"id"`
+	Name               string     `bson:"name"`
+	Type               string     `bson:"type"`
+	Certs              []Cert     `bson:"certs"`
+	Clients            []Client   `bson:"clients"`
+	Resources          []Resource `bson:"resources"`
+	Code               string     `bson:"code"`
+	Roles              []Role     `bson:"roles"`
+}
+
 type Application struct {
 	bongo.DocumentBase `bson:",inline"`
 	Id                 string     `bson:"id"`
@@ -73,4 +84,16 @@ func (application *Application) FindClientsById() []Client{
 	tempApp:=Application{}
 	config.ApplicationCollection.Find(query).Query.One((tempApp))
 	return tempApp.Clients
+}
+
+
+
+func (application *Application) FindCertByApplicationId() []Cert{
+	query := bson.M{"$and": []bson.M{
+		{"id": application.Id},
+	},
+	}
+	tempApp:=Application{}
+	config.ApplicationCollection.Find(query).Query.One((tempApp))
+	return tempApp.Certs
 }

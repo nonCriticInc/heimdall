@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/go-bongo/bongo"
 	"github.com/joho/godotenv"
+	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 	"os"
@@ -26,7 +28,7 @@ var RoleCollection *bongo.Collection
 var UserCollection *bongo.Collection
 var UsersOauthTokenCollection *bongo.Collection
 
-func InitDBEnvironmentVariables() {
+func initDBEnvironmentVariables() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Println("ERROR:", err.Error())
@@ -37,7 +39,7 @@ func InitDBEnvironmentVariables() {
 }
 
 // Connect Database
-func InitDBConnection() {
+func initDBConnection() {
 	// DB Connect
 	connection, err := CreateConnectionDB()
 	if err != nil {
@@ -48,7 +50,7 @@ func InitDBConnection() {
 }
 
 // Initialize Database Collections
-func InitDBCollections() {
+func initDBCollections() {
 	EntityCollection = connectDB.Collection("entityCollection")
 	ApplicationCollection =connectDB.Collection("applicationCollection")
 	CertCollection =connectDB.Collection("certCollection")
@@ -80,4 +82,17 @@ func CloseConnectionDB(client *mongo.Client) error {
 	}
 	fmt.Println("Connection to MongoDB closed.")
 	return nil
+}
+
+
+func New() *echo.Echo {
+	initDBEnvironmentVariables()
+	initDBConnection()
+	initDBCollections()
+	echoInstance := echo.New()
+	echoInstance.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Format: `[${time_rfc3339}]  ${status}  ${method} ${host}${path} ${latency_human}` + "\n",
+	}))
+	echoInstance.Use(middleware.Recover())
+	return echoInstance
 }

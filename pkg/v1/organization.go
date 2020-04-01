@@ -6,6 +6,16 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+type OrganizationDto struct {
+	Id                 string        `json:"id"`
+	Name               string        `json:"name"`
+	Adress             string        `json:"address"`
+	Phone              string        `json:"phone"`
+	Email              string        `json:"email"`
+	Code               string        `json:"code"`
+	Applications       []ApplicationDto `json:"applications"`
+}
+
 type Organization struct {
 	bongo.DocumentBase `bson:",inline"`
 	Id                 string        `bson:"id"`
