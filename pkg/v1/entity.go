@@ -9,6 +9,36 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+//apis
+func Create(context echo.Context) error {
+	createEntityDto, err := getCreateEntityDtoFromContext(context)
+	if err != nil {
+		return GenerateErrorResponse(context,"Payload Convertion Error!",err.Error())
+	}
+	if createEntityDto.Validate() != nil {
+		return GenerateErrorResponse(context,"Validation Error!",err.Error())
+	}
+	entity:=createEntityDto.GetEntity()
+	temp:=entity.FindById()
+	if temp.Id==""{
+		return GenerateErrorResponse(context,"Entity Already exists!",err.Error())
+	}
+	persistingErr := entity.Save()
+	if (persistingErr != nil) {
+		return GenerateErrorResponse(context,"Data persisting Error!",err.Error())
+	}
+	return GenerateSuccessResponse(context,entity,"Entity Saved successfully!")
+}
+
+func FindById(context echo.Context) error {
+	id:=context.Param("id")
+	entity:=Entity{
+		Id: id,
+	}
+	return GenerateSuccessResponse(context,entity.FindById(),"Entity Saved successfully!")
+}
+
+//dtos
 type CreateEntityDto struct {
 	Id     string `json:"id"`
 	Name   string `json:"name"`
@@ -34,7 +64,6 @@ func (createEntityDto *CreateEntityDto) Validate() error {
 	if (createEntityDto.Id == "") {
 		createEntityDto.Id=uuid.NewV4().String()
 	}
-
 	if (createEntityDto.Name == "") {
 		return errors.New("No Name has been provided!")
 	} else if (createEntityDto.Adress == "") {
@@ -45,20 +74,6 @@ func (createEntityDto *CreateEntityDto) Validate() error {
 		return errors.New("No Code has been provided!")
 	} else if (createEntityDto.Email == "") {
 		return errors.New("No Email has been provided!")
-	}
-	return nil
-}
-
-func CreateEntity(context echo.Context) error {
-	createEntityDto, err := getCreateEntityDtoFromContext(context)
-	if err != nil {
-	}
-	if createEntityDto.Validate() != nil {
-	}
-
-	persistingErr := createEntityDto.GetEntity().Save()
-	if (persistingErr != nil) {
-
 	}
 	return nil
 }
@@ -85,12 +100,25 @@ type Entity struct {
 	Organizations      []Organization `bson:"organizations"`
 }
 
+
+//entities
 func (entity *Entity) Save() error {
 	err := config.EntityCollection.Save(entity)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+
+func (entity *Entity) FindById() Entity {
+	query := bson.M{"$and": []bson.M{
+		{"id": entity.Id},
+	},
+	}
+	tempEntity := Entity{}
+	config.EntityCollection.Find(query).Query.One(&tempEntity)
+	return tempEntity
 }
 
 func (entity *Entity) FindAll() [] Entity {
