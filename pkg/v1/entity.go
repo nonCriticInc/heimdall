@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/nonCriticInc/heimdall/config"
 	"gopkg.in/mgo.v2/bson"
+	"log"
 )
 
 //apis
@@ -35,7 +36,11 @@ func FindById(context echo.Context) error {
 	entity:=Entity{
 		Id: id,
 	}
-	return GenerateSuccessResponse(context,entity.FindById(),"Entity Saved successfully!")
+	entity=entity.FindById()
+	if(entity.Id==""){
+		return GenerateSuccessResponse(context,nil,"Entity Saved successfully!")
+	}
+	return GenerateSuccessResponse(context,entity,"Entity Saved successfully!")
 }
 
 //dtos
@@ -48,15 +53,15 @@ type CreateEntityDto struct {
 	Email  string `json:"email"`
 }
 
-func (createEntityDto *CreateEntityDto) GetEntity() (*Entity) {
-	entity := &Entity{
+func (createEntityDto *CreateEntityDto) GetEntity() (Entity) {
+
+	entity := Entity{
 		Id:            createEntityDto.Id,
 		Name:          createEntityDto.Name,
 		Adress:        createEntityDto.Adress,
 		Phone:         createEntityDto.Phone,
 		Code:          createEntityDto.Code,
 		Email:         createEntityDto.Email,
-		Organizations: nil,
 	}
 	return entity
 }
@@ -83,8 +88,12 @@ func getCreateEntityDtoFromContext(context echo.Context) (*CreateEntityDto, erro
 	if err := context.Bind(formData); err != nil {
 		return nil, err
 	}
-	createEntityDto := formData.Attributes.(CreateEntityDto)
+	log.Print(formData.Attributes)
+
+	temp:=formData.Attributes
+	createEntityDto := temp.(CreateEntityDto)
 	createEntityDto.Id = formData.Id.(string)
+
 
 	return &createEntityDto, nil
 }
@@ -97,7 +106,6 @@ type Entity struct {
 	Phone              string         `bson:"phone"`
 	Code               string         `bson:"code"`
 	Email              string         `bson:"email"`
-	Organizations      []Organization `bson:"organizations"`
 }
 
 
@@ -130,10 +138,10 @@ func (entity *Entity) FindAll() [] Entity {
 
 func (entity *Entity) FindAllOrganizations() [] Organization {
 	query := bson.M{"$and": []bson.M{
-		{"id": entity.Id},
+		{"entity": entity.Id},
 	},
 	}
-	temp := Entity{}
-	config.EntityCollection.Find(query).Query.One(&temp)
-	return temp.Organizations
+	temp := []Organization{}
+	config.OrganizationCollection.Find(query).Query.All(&temp)
+	return temp
 }

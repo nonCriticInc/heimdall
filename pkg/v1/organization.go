@@ -6,15 +6,29 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-type OrganizationDto struct {
-	Id                 string        `json:"id"`
-	Name               string        `json:"name"`
-	Adress             string        `json:"address"`
-	Phone              string        `json:"phone"`
-	Email              string        `json:"email"`
-	Code               string        `json:"code"`
-	Applications       []ApplicationDto `json:"applications"`
-}
+//type OrganizationDto struct {
+//	Id                 string        `json:"id"`
+//	Name               string        `json:"name"`
+//	Adress             string        `json:"address"`
+//	Phone              string        `json:"phone"`
+//	Email              string        `json:"email"`
+//	Code               string        `json:"code"`
+//	Applications       []ApplicationDto `json:"applications"`
+//}
+
+//func (organizationDto *OrganizationDto) GetOrganization() (Organization) {
+//   organization:= Organization{
+//	   Id:           organizationDto.Id,
+//	   Name:         organizationDto.Name,
+//	   Adress:       organizationDto.Adress,
+//	   Phone:        organizationDto.Phone,
+//	   Email:        organizationDto.Email,
+//	   Code:         organizationDto.Code,
+//	   Applications: nil,
+//   }
+// return organization
+//}
+
 
 type Organization struct {
 	bongo.DocumentBase `bson:",inline"`
@@ -24,7 +38,8 @@ type Organization struct {
 	Phone              string        `bson:"phone"`
 	Email              string        `bson:"email"`
 	Code               string        `bson:"code"`
-	Applications       []Application `bson:"applications"`
+	Applications       []string `bson:"applications"`
+	Entity string `bson:"entity"`
 }
 
 
@@ -38,10 +53,10 @@ func (organization *Organization) Save() error{
 
 func (organization *Organization) FindAllApplications() [] Application{
 	query := bson.M{"$and": []bson.M{
-		{"id": organization.Id},
+		{"organization": organization.Id},
 	},
 	}
-	temp:=Organization{}
-	config.OrganizationCollection.Find(query).Query.One(&temp)
-	return temp.Applications
+	apps:=[]Application{}
+	config.ApplicationCollection.Find(query).Query.All(&apps)
+	return apps
 }

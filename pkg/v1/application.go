@@ -6,16 +6,16 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-type ApplicationDto struct {
-	Id                 string     `bson:"id"`
-	Name               string     `bson:"name"`
-	Type               string     `bson:"type"`
-	Certs              []Cert     `bson:"certs"`
-	Clients            []Client   `bson:"clients"`
-	Resources          []Resource `bson:"resources"`
-	Code               string     `bson:"code"`
-	Roles              []Role     `bson:"roles"`
-}
+//type ApplicationDto struct {
+//	Id                 string     `bson:"id"`
+//	Name               string     `bson:"name"`
+//	Type               string     `bson:"type"`
+//	Certs              []Cert     `bson:"certs"`
+//	Clients            []Client   `bson:"clients"`
+//	Resources          []Resource `bson:"resources"`
+//	Code               string     `bson:"code"`
+//	Roles              []Role     `bson:"roles"`
+//}
 
 type Application struct {
 	bongo.DocumentBase `bson:",inline"`
@@ -27,6 +27,7 @@ type Application struct {
 	Resources          []Resource `bson:"resources"`
 	Code               string     `bson:"code"`
 	Roles              []Role     `bson:"roles"`
+	Organization string `bson:"organization"`
 }
 
 
