@@ -15,7 +15,7 @@ type PostRequestBody struct {
 type ResponseDTO struct {
 	Data    interface{} `json:"data"`
 	Status  string      `json:"status"`
-	Message string      `json:"message"`
+	Message interface{}      `json:"message"`
 }
 
 func GenerateSuccessResponse(c echo.Context, data interface{}, message string) error {
@@ -27,10 +27,17 @@ func GenerateSuccessResponse(c echo.Context, data interface{}, message string) e
 	})
 }
 
-func GenerateErrorResponse(c echo.Context, data interface{}, message string) error {
+func GenerateErrorResponse(c echo.Context, data interface{}, message interface{}) error {
 	return c.JSON(http.StatusBadRequest, ResponseDTO{
 		Status:  "error",
 		Message: message,
 		Data:    data,
 	})
 }
+//func GenerateErrorResponse(c echo.Context, data interface{}, message []string) error {
+//	return c.JSON(http.StatusBadRequest, ResponseDTO{
+//		Status:  "error",
+//		Message: message,
+//		Data:    data,
+//	})
+//}

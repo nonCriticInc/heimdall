@@ -11,7 +11,7 @@ import (
 )
 
 //apis
-func Create(context echo.Context) error {
+func CreateEntity(context echo.Context) error {
 	createEntityDto, err := getCreateEntityDtoFromContext(context)
 	if err != nil {
 		return GenerateErrorResponse(context,"Payload Convertion Error!",err.Error())
@@ -97,7 +97,7 @@ func getCreateEntityDtoFromContext(context echo.Context) (*CreateEntityDto, erro
 
 	return &createEntityDto, nil
 }
-
+//entities
 type Entity struct {
 	bongo.DocumentBase `bson:",inline"`
 	Id                 string         `bson:"id"`
@@ -109,7 +109,7 @@ type Entity struct {
 }
 
 
-//entities
+
 func (entity *Entity) Save() error {
 	err := config.EntityCollection.Save(entity)
 	if err != nil {
