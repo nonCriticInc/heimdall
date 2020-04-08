@@ -112,8 +112,8 @@ type Organization struct {
 	Entity             string `bson:"entity"`
 }
 
-func (organization *Organization) Save() error {
-	err := config.OrganizationCollection.Save(organization)
+func (organization Organization) Save() error {
+	err := config.OrganizationCollection.Save(&organization)
 	if err != nil {
 		return err
 	}
