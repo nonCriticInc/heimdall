@@ -52,7 +52,7 @@ func FindOrganizationsByEntity(context echo.Context) error {
 	if(entity.Id==""){
 		return GenerateSuccessResponse(context,nil,"")
 	}
-	return GenerateSuccessResponse(context,entity.FindAllOrganizations(),"")
+	return GenerateSuccessResponse(context,entity.FindOrganizationsByEntityId(),"")
 }
 
 //dtos
@@ -151,7 +151,7 @@ func (entity *Entity) FindAll() [] Entity {
 	return tempEntities
 }
 
-func (entity *Entity) FindAllOrganizations() [] Organization {
+func (entity *Entity) FindOrganizationsByEntityId() [] Organization {
 	query := bson.M{"$and": []bson.M{
 		{"entity": entity.Id},
 	},

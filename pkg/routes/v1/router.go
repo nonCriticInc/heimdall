@@ -15,5 +15,8 @@ func V1Router(g *echo.Group) {
 	applicationMonitor:= g.Group("/applications")
 	ApplicationRouter(applicationMonitor)
 
+	resourceMonitor:= g.Group("/resources")
+	ResourceRouter(resourceMonitor)
+
 
 }

@@ -57,6 +57,18 @@ func FindApplicationById(context echo.Context) error {
 	return GenerateSuccessResponse(context,app,"")
 }
 
+
+func FindResourcesByApplication(context echo.Context) error {
+	id:=context.Param("id")
+	app:=Application{
+		Id: id,
+	}
+	if(app.Id==""){
+		return GenerateSuccessResponse(context,nil,"")
+	}
+	return GenerateSuccessResponse(context,app.FindResourcesByApplicationId(),"")
+}
+
 func getCreateApplicationDtoListFromContext(context echo.Context) (*CreateApplicationDtoList, error) {
 	formData := new(ApplicationPostRequestBody)
 	if err := context.Bind(formData); err != nil {
@@ -76,6 +88,8 @@ type CreateApplicationDtoList struct {
 	Organization string `json:"organization"`
 	Applications []CreateApplicationDto `json:"applications"`
 }
+
+
 type CreateApplicationDto struct {
 	Id     string `json:"id"`
 	Name   string `json:"name"`
@@ -126,10 +140,6 @@ func (dtoList *CreateApplicationDtoList) Validate() error {
 
 type Application struct {
 	bongo.DocumentBase `bson:",inline"`
-	//Certs              []Cert     `bson:"certs"`
-	//Clients            []Client   `bson:"clients"`
-	//Resources          []Resource `bson:"resources"`
-	//Roles              []Role     `bson:"roles"`
 	Id                 string `bson:"id" json:"id"`
 	Name               string `bson:"name" json:"name"`
 	Type             string `bson:"type" json:"type"`
@@ -163,14 +173,14 @@ func (application *Application) FindById() Application{
 	return tempApp
 }
 
-func (application *Application) FindResourcesById() []Resource{
+func (application *Application) FindResourcesByApplicationId() []Resource{
 	query := bson.M{"$and": []bson.M{
-		{"id": application.Id},
+		{"application": application.Id},
 	},
 	}
-	tempApp:=Application{}
-	config.ApplicationCollection.Find(query).Query.One((tempApp))
-	return nil
+	tempResource:=[] Resource{}
+	config.ResourceCollection.Find(query).Query.All((&tempResource))
+	return tempResource
 }
 
 func (application *Application) FindRolesById() []Role{

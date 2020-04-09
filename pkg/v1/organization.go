@@ -64,7 +64,7 @@ func FindApplicationsByOrganization(context echo.Context) error {
 	if(org.Id==""){
 		return GenerateSuccessResponse(context,nil,"")
 	}
-	return GenerateSuccessResponse(context,org.FindAllApplications(),"")
+	return GenerateSuccessResponse(context,org.FindApplicationsByOrganizationId(),"")
 }
 
 
@@ -169,7 +169,7 @@ func (organization *Organization) FindById() Organization {
 	return tempOrganization
 }
 
-func (organization *Organization) FindAllApplications() [] Application {
+func (organization *Organization) FindApplicationsByOrganizationId() [] Application {
 	query := bson.M{"$and": []bson.M{
 		{"organization": organization.Id},
 	},

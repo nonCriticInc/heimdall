@@ -9,5 +9,6 @@ func ApplicationRouter(g *echo.Group) {
 
 	g.POST("", v1.CreateApplications)
 	g.GET("/:id", v1.FindApplicationById)
+	g.GET("/:id/resources", v1.FindResourcesByApplication)
 
 }
