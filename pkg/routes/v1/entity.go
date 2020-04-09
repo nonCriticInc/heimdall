@@ -10,6 +10,7 @@ import (
 func EntityRouter(g *echo.Group) {
 
 	g.POST("", v1.CreateEntity)
-	g.GET("/:id/", v1.FindById)
+	g.GET("/:id", v1.FindEntityById)
+	g.GET("/:id/organizations", v1.FindOrganizationsByEntity)
 }
 

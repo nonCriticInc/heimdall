@@ -1,38 +1,145 @@
 package v1
 
 import (
+	"errors"
 	"github.com/go-bongo/bongo"
+	"github.com/labstack/echo"
 	"github.com/nonCriticInc/heimdall/config"
+	"github.com/twinj/uuid"
 	"gopkg.in/mgo.v2/bson"
 )
 
-//type ApplicationDto struct {
-//	Id                 string     `bson:"id"`
-//	Name               string     `bson:"name"`
-//	Type               string     `bson:"type"`
-//	Certs              []Cert     `bson:"certs"`
-//	Clients            []Client   `bson:"clients"`
-//	Resources          []Resource `bson:"resources"`
-//	Code               string     `bson:"code"`
-//	Roles              []Role     `bson:"roles"`
-//}
+//apis
+func CreateApplications(context echo.Context) error {
+	applicationDtoList, err := getCreateApplicationDtoListFromContext(context)
+	if err != nil {
+		return GenerateErrorResponse(context, "Payload Convertion Error!", err)
+	}
 
-type Application struct {
-	bongo.DocumentBase `bson:",inline"`
-	Id                 string     `bson:"id"`
-	Name               string     `bson:"name"`
-	Type               string     `bson:"type"`
-	Certs              []Cert     `bson:"certs"`
-	Clients            []Client   `bson:"clients"`
-	Resources          []Resource `bson:"resources"`
-	Code               string     `bson:"code"`
-	Roles              []Role     `bson:"roles"`
-	Organization string `bson:"organization"`
+	validationErr:=applicationDtoList.Validate()
+	if validationErr!=nil{
+		return GenerateErrorResponse(context, "Validation Error!", validationErr.Error())
+	}
+	var results []error
+
+	for _,app:=range applicationDtoList.Applications {
+		temp :=app.GetApplication()
+		if temp.FindById().Id != "" {
+			results = append(results, errors.New("Application by id "+temp.Id+" already exixts!"))
+		} else {
+			temp.Organization=applicationDtoList.Organization
+			savingErr := temp.Save()
+			if savingErr != nil {
+				results = append(results, savingErr)
+			}
+		}
+	}
+
+	if len(results)>0{
+		var errMessages [] string
+		for _,result:=range results{
+			errMessages=append(errMessages, result.Error())
+		}
+		return GenerateErrorResponse(context,"Data persisting Error!", errMessages)
+	}
+	return GenerateSuccessResponse(context,applicationDtoList.Applications,"Applications Saved successfully!")
+
+}
+func FindApplicationById(context echo.Context) error {
+	id:=context.Param("id")
+	app:=Application{
+		Id: id,
+	}
+	app=app.FindById()
+	if(app.Id==""){
+		return GenerateSuccessResponse(context,nil,"")
+	}
+	return GenerateSuccessResponse(context,app,"")
+}
+
+func getCreateApplicationDtoListFromContext(context echo.Context) (*CreateApplicationDtoList, error) {
+	formData := new(ApplicationPostRequestBody)
+	if err := context.Bind(formData); err != nil {
+		return nil, err
+	}
+	return &formData.Attributes, nil
+}
+
+type ApplicationPostRequestBody struct {
+	Id                 string     `json:"id"`
+	Type               string     `json:"type"`
+	Attributes         CreateApplicationDtoList   `json:"attributes"`
 }
 
 
-func (application *Application) Save() error{
-	err := config.ApplicationCollection.Save(application)
+type CreateApplicationDtoList struct {
+	Organization string `json:"organization"`
+	Applications []CreateApplicationDto `json:"applications"`
+}
+type CreateApplicationDto struct {
+	Id     string `json:"id"`
+	Name   string `json:"name"`
+	Type string `json:"type"`
+	Code   string `json:"code"`
+	Email  string `json:"email"`
+	Organization string `json:"organization"`
+}
+
+func (createApplicationDto *CreateApplicationDto) GetApplication() (Application) {
+	app:= Application{
+		Id:           createApplicationDto.Id,
+		Name:         createApplicationDto.Name,
+		Type:         createApplicationDto.Type,
+		Code:         createApplicationDto.Code,
+		Organization: createApplicationDto.Organization,
+	}
+	return app
+}
+
+func (dtoList *CreateApplicationDtoList) Validate() error {
+	org:=Organization{
+		Id: dtoList.Organization,
+	}
+	if org.FindById().Id==""{
+		return errors.New("No Entity by id "+dtoList.Organization+" Exists!")
+	}
+
+	for _, dto := range dtoList.Applications {
+		if (dto.Id == "") {
+			dto.Id = uuid.NewV4().String()
+		}
+		if (dto.Name == "") {
+			return errors.New("No Name has been provided!")
+		} else if (dto.Type == "") {
+			return errors.New("No Type has been provided!")
+		} else if (dto.Code == "") {
+			return errors.New("No Code has been provided!")
+		} else if (dto.Email == "") {
+			return errors.New("No Email has been provided!")
+		}
+	}
+
+	return nil
+}
+
+
+
+type Application struct {
+	bongo.DocumentBase `bson:",inline"`
+	//Certs              []Cert     `bson:"certs"`
+	//Clients            []Client   `bson:"clients"`
+	//Resources          []Resource `bson:"resources"`
+	//Roles              []Role     `bson:"roles"`
+	Id                 string `bson:"id" json:"id"`
+	Name               string `bson:"name" json:"name"`
+	Type             string `bson:"type" json:"type"`
+	Code               string `bson:"code" json:"code"`
+	Organization             string `bson:"organization" json:"organization"`
+}
+
+
+func (application Application) Save() error{
+	err := config.ApplicationCollection.Save(&application)
 	if err != nil {
 		return err
 	}
@@ -52,7 +159,7 @@ func (application *Application) FindById() Application{
 	},
 	}
 	tempApp:=Application{}
-	config.ApplicationCollection.Find(query).Query.One((tempApp))
+	config.ApplicationCollection.Find(query).Query.One(&tempApp)
 	return tempApp
 }
 
@@ -63,7 +170,7 @@ func (application *Application) FindResourcesById() []Resource{
 	}
 	tempApp:=Application{}
 	config.ApplicationCollection.Find(query).Query.One((tempApp))
-	return tempApp.Resources
+	return nil
 }
 
 func (application *Application) FindRolesById() []Role{
@@ -73,7 +180,7 @@ func (application *Application) FindRolesById() []Role{
 	}
 	tempApp:=Application{}
 	config.ApplicationCollection.Find(query).Query.One((tempApp))
-	return tempApp.Roles
+	return nil
 }
 
 
@@ -84,7 +191,7 @@ func (application *Application) FindClientsById() []Client{
 	}
 	tempApp:=Application{}
 	config.ApplicationCollection.Find(query).Query.One((tempApp))
-	return tempApp.Clients
+	return nil
 }
 
 
@@ -96,5 +203,5 @@ func (application *Application) FindCertByApplicationId() []Cert{
 	}
 	tempApp:=Application{}
 	config.ApplicationCollection.Find(query).Query.One((tempApp))
-	return tempApp.Certs
+	return nil
 }

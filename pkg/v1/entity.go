@@ -23,7 +23,7 @@ func CreateEntity(context echo.Context) error {
 	entity:=createEntityDto.GetEntity()
 	temp:=entity.FindById()
 	if temp.Id!=""{
-		return GenerateErrorResponse(context,"Entity Already exists!",err.Error())
+		return GenerateErrorResponse(context,"Entity Already exists!",err)
 	}
 	persistingErr := entity.Save()
 	if (persistingErr != nil) {
@@ -32,7 +32,7 @@ func CreateEntity(context echo.Context) error {
 	return GenerateSuccessResponse(context,entity,"Entity Saved successfully!")
 }
 
-func FindById(context echo.Context) error {
+func FindEntityById(context echo.Context) error {
 	id:=context.Param("id")
 	entity:=Entity{
 		Id: id,
@@ -52,7 +52,7 @@ func FindOrganizationsByEntity(context echo.Context) error {
 	if(entity.Id==""){
 		return GenerateSuccessResponse(context,nil,"")
 	}
-	return GenerateSuccessResponse(context,entity.FindAllOrganizations(),"Entity Saved successfully!")
+	return GenerateSuccessResponse(context,entity.FindAllOrganizations(),"")
 }
 
 //dtos
@@ -116,15 +116,13 @@ func getCreateEntityDtoFromContext(context echo.Context) (*CreateEntityDto, erro
 //entities
 type Entity struct {
 	bongo.DocumentBase `bson:",inline"`
-	Id                 string         `bson:"id"`
-	Name               string         `bson:"name"`
-	Adress             string         `bson:"address"`
-	Phone              string         `bson:"phone"`
-	Code               string         `bson:"code"`
-	Email              string         `bson:"email"`
+	Id                 string         `bson:"id" json:"id"`
+	Name               string         `bson:"name" json:"name"`
+	Adress             string         `bson:"address" json:"address"`
+	Phone              string         `bson:"phone" json:"phone"`
+	Code               string         `bson:"code" json:"code"`
+	Email              string         `bson:"email" json:"code"`
 }
-
-
 
 func (entity *Entity) Save() error {
 	err := config.EntityCollection.Save(entity)
@@ -135,12 +133,14 @@ func (entity *Entity) Save() error {
 }
 
 func (entity *Entity) FindById() Entity {
+
 	query := bson.M{"$and": []bson.M{
 		{"id": entity.Id},
 	},
 	}
 	tempEntity := Entity{}
-	config.EntityCollection.Find(query).Query.One(&tempEntity)
+	_ = config.EntityCollection.Find(query).Query.One(&tempEntity)
+
 	return tempEntity
 }
 
