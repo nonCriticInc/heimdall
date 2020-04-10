@@ -8,11 +8,12 @@ import (
 
 type Role struct {
 	bongo.DocumentBase `bson:",inline"`
-	Id                 string       `bson:"id"`
-	Name               string       `bson:"token"`
-	Parent             string       `bson:"parent"`
-	Permissions        []Permission `bson:"permissions"`
-	Code               string       `bson:"code"`
+	Id                  string `bson:"id" json:"id"`
+	Name               string       `bson:"name" json:"name"`
+	Parent             string       `bson:"parent" json:"parent"`
+	Permissions        []string `bson:"permissions" json:"permissions"`
+	Code               string       `bson:"code" json:"code"`
+	Application        string   `bson:"application" json:"application"`
 }
 
 
@@ -24,12 +25,33 @@ func (role *Role) Save() error{
 	return nil
 }
 
+func (role *Role) FindAllChildRoles() [] Role{
+	query := bson.M{"$and": []bson.M{
+		{"parent": role.Id},
+	},
+	}
+	temp:=[]Role{}
+	config.RoleCollection.Find(query).Query.All(&temp)
+	return temp
+}
+
+
+func (role *Role) FindAllParentRoles() [] Role{
+	query := bson.M{"$and": []bson.M{
+		{"parent": ""},
+	},
+	}
+	temp:=[]Role{}
+	config.RoleCollection.Find(query).Query.All(&temp)
+	return temp
+}
+
 func (role *Role) FindAllPermissions() [] Permission{
 	query := bson.M{"$and": []bson.M{
 		{"id": role.Id},
 	},
 	}
 	temp:=Role{}
-	config.RoleCollection.Find(query).Query.One(&temp)
-	return temp.Permissions
+	config.PermissionCollection.Find(query).Query.One(&temp)
+	return nil
 }

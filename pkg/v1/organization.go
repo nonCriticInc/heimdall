@@ -169,7 +169,7 @@ func (organization *Organization) FindById() Organization {
 	return tempOrganization
 }
 
-func (organization *Organization) FindApplicationsByOrganizationId() [] Application {
+func (organization *Organization)  FindApplicationsByOrganizationId() [] Application {
 	query := bson.M{"$and": []bson.M{
 		{"organization": organization.Id},
 	},
