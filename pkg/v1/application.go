@@ -115,7 +115,7 @@ func (dtoList *CreateApplicationDtoList) Validate() error {
 		Id: dtoList.Organization,
 	}
 	if org.FindById().Id==""{
-		return errors.New("No Entity by id "+dtoList.Organization+" Exists!")
+		return errors.New("No Application by id "+dtoList.Organization+" Exists!")
 	}
 
 	for _, dto := range dtoList.Applications {

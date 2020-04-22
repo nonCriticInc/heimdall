@@ -39,6 +39,7 @@ func (role *Role) FindAllChildRoles() [] Role{
 func (role *Role) FindAllParentRoles() [] Role{
 	query := bson.M{"$and": []bson.M{
 		{"parent": ""},
+		{"application": role.Application},
 	},
 	}
 	temp:=[]Role{}
@@ -54,4 +55,14 @@ func (role *Role) FindAllPermissions() [] Permission{
 	temp:=Role{}
 	config.PermissionCollection.Find(query).Query.One(&temp)
 	return nil
+}
+
+func (role *Role) FindById() Role {
+	query := bson.M{"$and": []bson.M{
+		{"id": role.Id},
+	},
+	}
+	tempRole:=Role{}
+	config.RoleCollection.Find(query).Query.One(&tempRole)
+	return tempRole
 }
