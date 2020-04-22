@@ -19,4 +19,7 @@ func V1Router(g *echo.Group) {
 	ResourceRouter(resourceMonitor)
 
 
+	permissionMonitor:= g.Group("/permissions")
+	PermissionRouter(resourceMonitor)
+
 }
