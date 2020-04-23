@@ -3,9 +3,54 @@ package v1
 import (
 	"errors"
 	"github.com/go-bongo/bongo"
+	"github.com/labstack/echo"
 	"github.com/nonCriticInc/heimdall/config"
 	"gopkg.in/mgo.v2/bson"
 )
+
+func CreateRoles(context echo.Context) error {
+	roleDtoList, err := getCreateRoleDtoListFromContext(context)
+	if err != nil {
+		return GenerateErrorResponse(context, "Payload Convertion Error!", err)
+	}
+	validationErr:=roleDtoList.Validate()
+
+	if validationErr!=nil{
+		return GenerateErrorResponse(context, "Validation Error!", validationErr.Error())
+	}
+	var results []error
+
+	for _,app:=range roleDtoList.Roles {
+		temp :=app.GetRole()
+		if temp.FindById().Id != "" {
+			results = append(results, errors.New("Role by id "+temp.Id+" already exixts!"))
+		} else {
+			temp.Application=roleDtoList.Application
+			savingErr := temp.Save()
+			if savingErr != nil {
+				results = append(results, savingErr)
+			}
+		}
+	}
+
+	if len(results)>0{
+		var errMessages [] string
+		for _,result:=range results{
+			errMessages=append(errMessages, result.Error())
+		}
+		return GenerateErrorResponse(context,"Data persisting Error!", errMessages)
+	}
+	return GenerateSuccessResponse(context,roleDtoList.Roles,"Roles Saved successfully!")
+}
+
+func getCreateRoleDtoListFromContext(context echo.Context) (*CreateRoleDtoList, error) {
+	formData := new(RolePostRequestBody)
+	if err := context.Bind(formData); err != nil {
+		return nil, err
+	}
+	return &formData.Attributes, nil
+}
+
 
 type RolePostRequestBody struct {
 	Id                 string     `json:"id"`
@@ -37,6 +82,18 @@ type CreateRoleDto struct {
 	Application  string `json:"application"`
 }
 
+func (dto CreateRoleDto) GetRole() Role{
+
+	permission:=Role{
+		Id:           dto.Id,
+		Name:         dto.Name,
+		Parent:       dto.Parent,
+		Permissions:  nil,
+		Code:         dto.Code,
+		Application:  dto.Application,
+	}
+	return permission
+}
 
 
 // entites
