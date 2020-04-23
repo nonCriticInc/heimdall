@@ -105,7 +105,7 @@ type PermissionPostRequestBody struct {
 
 type CreatePermissionDtoList struct {
 	Role  string `json:"role"`
-	Permissions []CreatePermissionDto `json:"applications"`
+	Permissions []CreatePermissionDto `json:"permissions"`
 }
 
 
