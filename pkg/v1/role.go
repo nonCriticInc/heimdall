@@ -5,8 +5,11 @@ import (
 	"github.com/go-bongo/bongo"
 	"github.com/labstack/echo"
 	"github.com/nonCriticInc/heimdall/config"
+	"github.com/twinj/uuid"
 	"gopkg.in/mgo.v2/bson"
+	"strconv"
 )
+
 
 func CreateRoles(context echo.Context) error {
 	roleDtoList, err := getCreateRoleDtoListFromContext(context)
@@ -20,8 +23,18 @@ func CreateRoles(context echo.Context) error {
 	}
 	var results []error
 
-	for _,app:=range roleDtoList.Roles {
+	for i,app:=range roleDtoList.Roles {
+		if (app.Id == "") {
+			app.Id = uuid.NewV4().String()
+		}
+		if (app.Name == "") {
+			results=append(results,errors.New("No Name has been provided!"+" record number:"+strconv.Itoa(i)+", provable application id:"+app.Id))
+		}  else if (app.Code == "") {
+			results=append(results,errors.New("No Code has been provided!"+" record number:"+strconv.Itoa(i)+", provable application id:"+app.Id))
+		}
+
 		temp :=app.GetRole()
+
 		if temp.FindById().Id != "" {
 			results = append(results, errors.New("Role by id "+temp.Id+" already exixts!"))
 		} else {
